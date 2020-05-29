@@ -1,25 +1,25 @@
 from GameModel import GameModel
+from FileOut import FileOut
+
 
 # ========================================<Print Helpers>========================================= #
-def printBanner():
-    print("#==============================================================================#")
-    print("#============================<Incan Gold Predictor>============================#")
-    print("#==============================================================================#")
+def banner():
+    return "#==============================================================================#\n" + \
+           "#============================<Incan Gold Predictor>============================#\n" + \
+           "#==============================================================================#\n"
 
 
-def printRoundBanner(n):
-    print('\n')
-    print("#==============================================================================#")
-    print("#==================================<Round " + str(n) + ">===================================#")
-    print("#==============================================================================#")
+def roundBanner(n):
+    return "#==============================================================================#\n" + \
+           "#==================================<Round " + str(n) + ">===================================#\n" + \
+           "#==============================================================================#\n"
 
 
-def printTurnBanner(n):
-    print()
-    print("#===============<Turn " + str(n) + ">===============#")
+def turnBanner(n):
+    return "#===============<Turn " + str(n) + ">===============#\n"
 
 
-def printScores(playerList: list, playerScores: dict):
+def scores(playerList: list, playerScores: dict):
     longestName = 0
     for player in playerList:
         if len(player) > longestName:
@@ -28,42 +28,44 @@ def printScores(playerList: list, playerScores: dict):
         if len(str(playerScores[player])) > longestName:
             longestName = len(str(playerScores[player]))
 
+    toReturn = ''
     for i in range(0, len(playerList)):
         if i != 0:
-            print(' ', end='')
-        print('| ', end='')
+            toReturn += ' '
+        toReturn += '| '
 
         player = str(playerList[i])
-        printCenterPad(player, longestName)
-    print('|')
+        toReturn += centerPad(player, longestName)
+    toReturn += '|\n'
 
     for i in range(0, len(playerList)):
         if i != 0:
-            print('=', end='')
-        print('+=', end='')
+            toReturn += '='
+        toReturn += '+='
 
         for j in range(0, longestName):
-            print('=', end='')
-    print("+")
+            toReturn += '='
+    toReturn += "+\n"
 
     for i in range(0, len(playerList)):
         if i != 0:
-            print(' ', end='')
-        print('| ', end='')
+            toReturn += ' '
+        toReturn += '| '
 
         player = str(playerList[i])
-        printCenterPad(str(playerScores[player]), longestName)
-    print('|')
+        toReturn += centerPad(str(playerScores[player]), longestName)
+    toReturn += '|\n'
+    return toReturn
 
 
-def printBank(game: GameModel):
-    print("Money in the bank:")
-    printScores(game.getPlayers(), game.getBank())
+def bank(game: GameModel):
+    toReturn = "Money in the bank:\n"
+    toReturn += scores(game.getPlayers(), game.getBank())
+    return toReturn
 
 
-def printPocket(game: GameModel):
-    print("Money in pocket:")
-    printScores(game.getActivePlayers(), game.getPocket())
+def pocket(game: GameModel):
+    return "Money in pocket:\n" + scores(game.getActivePlayers(), game.getPocket())
 
 
 # =========================================<Math Helpers>========================================= #
@@ -102,30 +104,38 @@ def simplifyFraction(fraction: tuple):
 
 
 # =========================================<Misc Helpers>========================================= #
-def printCenterPad(val: str, size: int):
+def centerPad(val: str, size: int):
+    toReturn = ''
     for j in range(0, int((size - len(val)) / 2)):
-        print(' ', end='')
-    print(val, end='')
+        toReturn += ' '
+    toReturn += val
     for j in range(0, int((size - len(val)) / 2 + .5)):
-        print(' ', end='')
+        toReturn += ' '
+
+    return toReturn
 
 
-def getPlayerNames(prompt: str):
+def getPlayerNames(prompt: str, fp=None):
     players = []
     player = input(prompt).strip()
-
+    if fp is not None:
+        fp.filePrint(player + '\n')
     while player:
         players.append(player)
         for ch in prompt:
             print(' ', end='')
+            if fp is not None:
+                fp.filePrint(' ', end='')
         player = input().strip()
+    if fp is not None:
+        fp.filePrint(player + '\n')
 
     return players
 
 
 # ======================================<Main Functionality>====================================== #
 def main():
-    printBanner()
+    print(banner())
 
     # ==============================<Game Setup>============================== #
     # Player name entry
@@ -151,49 +161,63 @@ def main():
             print(' (You)', end='')
     print('\n')
 
+    filePath = input("Choose a filePath for output saving (blank to ignore): ").strip()
+    if not filePath:
+        filePath = None
+    fp = FileOut(filePath)
+    fp.setPlayers(players)
+    fp.filePrint()
+
     game = GameModel(players)
 
     # =============================<Game Rounds>============================== #
     gameRound = 1
-    while gameRound <= 5:
-        printRoundBanner(gameRound)
+    while gameRound <= 1:
+        fp.print()
+        fp.print(roundBanner(gameRound))
         game.startRound()
 
         turnCounter = 1
         wasBust = False
         while not wasBust:
-            printTurnBanner(turnCounter)
+            fp.print(turnBanner(turnCounter))
 
             bustChance = simplifyFraction(game.chanceBust())
 
-            printBank(game)
-            print()
-            printPocket(game)
+            # ======================<Print Scoreboards>======================= #
+            fp.print(bank(game))
+            fp.print()
+            fp.print(pocket(game))
+            fp.print()
 
-            print()
-            print("Chance of a bust this round is " + str(bustChance[0]) + "/" + str(bustChance[1]) + " (" +
-                  str(round(float(bustChance[0]) / bustChance[1], 2)) + ")")
-            print("Expected payout this round is " + str(round(game.expectedPayout())))
-            print("Leftover treasure on retreat is " + str(game.getLeftover()))
+            # =======================<Print Prediction>======================= #
+            fp.print("Chance of a bust this round is " + str(bustChance[0]) + "/" + str(bustChance[1]) + " (" +
+                     str(round(float(bustChance[0]) / bustChance[1], 1)) + ")")
+            fp.print("Expected payout this turn is " + str(round(game.expectedPayout(), 1)))
+            fp.print("Average value of remaining treasures is " + str(round(game.deck.avg_treasure(), 1)))
+            fp.print()
+
+            # ======================<Print Retreat Info>====================== #
+            fp.print("Leftover treasure on retreat is " + str(game.getLeftover()))
             if game.artifact:
-                print("This round's artifact is available")
+                fp.print("This round's artifact is available")
             elif game.artifactShown:
-                print("This round's artifact has been claimed")
+                fp.print("This round's artifact has been claimed")
             else:
-                print("This round's artifact is still hidden")
+                fp.print("This round's artifact is still hidden")
 
-            print()
+            fp.print()
 
             # ===================<Gather Round Information>=================== #
-            players = getPlayerNames("Enter the names of all players who retreated: ")
+            players = getPlayerNames("Enter the names of all players who retreated: ", fp)
             game.playersRetreat(players)
             if len(game.getActivePlayers()) == 0:
-                print("All explorers have retreated")
-                break   # Break when there are no more active players
+                fp.print("All explorers have retreated")
+                break  # Break when there are no more active players
 
-            choice = input("What was the last turn? Artifact (a), Treasure (t), or Hazard (h): ").strip()
+            choice = input("What was the last card? Artifact (a), Treasure (t), or Hazard (h): ").strip()
             while len(choice) == 0 or (choice[0].upper() not in ['A', 'T', 'H']):
-                choice = input("What was the last turn? Artifact (a), Treasure (t), or Hazard (h): ").strip()
+                choice = input("What was the last card? Artifact (a), Treasure (t), or Hazard (h): ").strip()
 
             if choice[0].upper() == 'A':
                 game.gotArtifact()
@@ -210,8 +234,10 @@ def main():
 
             turnCounter += 1
 
-        print("===<ROUND END>===")
+        fp.print("===<ROUND END>===")
         gameRound += 1
+
+    fp.close()
 
 
 if __name__ == '__main__':
