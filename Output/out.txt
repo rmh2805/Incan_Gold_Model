@@ -1,0 +1,83 @@
+Players: f, g
+
+#==============================================================================#
+#==================================<Round 1>===================================#
+#==============================================================================#
+
+#===============<Turn 1>===============#
+
+Money in the bank:
+| f | g|
++===+==+
+| 0 | 0|
+
+
+Money in pocket:
+| f | g|
++===+==+
+| 0 | 0|
+
+
+Chance of a bust this round is 0/31 (0.0)
+Expected payout this turn is 1.6
+Average value of remaining treasures is 8.3
+
+Leftover treasure on retreat is 0
+This round's artifact is still hidden
+
+
+
+
+
+#===============<Turn 2>===============#
+
+Money in the bank:
+| f | g|
++===+==+
+| 0 | 0|
+
+
+Money in pocket:
+| f | g|
++===+==+
+| 0 | 0|
+
+
+Chance of a bust this round is 0/30 (0.0)
+Expected payout this turn is 1.7
+Average value of remaining treasures is 8.3
+
+Leftover treasure on retreat is 0
+This round's artifact is available
+
+g
+
+                                              
+
+#===============<Turn 3>===============#
+
+Money in the bank:
+| f | g|
++===+==+
+| 0 | 5|
+
+
+Money in pocket:
+| f |
++===+
+| 17|
+
+
+Chance of a bust this round is 0/29 (0.0)
+Expected payout this turn is 3.5
+Average value of remaining treasures is 7.6
+
+Leftover treasure on retreat is 0
+This round's artifact has been claimed
+
+f
+
+                                              
+
+All explorers have retreated
+===<ROUND END>===
